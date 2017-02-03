@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pylab as plt
 
 
 def initialize_network(input_size, output_size, hidden_sizes):
@@ -16,8 +17,13 @@ def initialize_layer(rows, cols):
     return np.random.random([rows, cols])
 
 
+def add_bias(x):
+    bias = np.ones((1, x.shape[1]))
+    return np.append(bias, x, axis=0)
+
+
 def forward_layer(W, x):
-    return activate(W @ np.append(1, x))
+    return activate(W @ add_bias(x))
 
 
 def forward_all(Ws, x):
@@ -39,54 +45,62 @@ def activate(x):
 
 
 def gradient(x):
-    return activate(x)*(1 - activate(x))
+    y = activate(x).transpose()
+    return y*(1 - y)
 
 
 def backpropagate_layer(x, y, W, learning_rate, delta):
-    print('Delta:', delta.shape)
-    print('Gradient:', gradient(y).shape)
-    print('X:', np.append(1, x).shape)
+    x_bias = add_bias(x)
+    z = W@x_bias
+    
+    dZ = delta*gradient(z)
+    dX = dZ@W
+    dW = dZ.transpose()@x_bias.transpose()
 
-    dX = delta@gradient(y)*W
-    dW = delta@gradient(y)*np.append(1, x)
-
-    print('dX', dX.shape)
-    print('dW', dW.shape)
-
-    W = W - learning_rate*dW
-    return dX, W
+    W = W + learning_rate*dW
+    return dX[:,1:], W
 
 
 def backpropagate(x, y, Ws, learning_rate):
     new_Ws = []
 
     xs = forward_all(Ws, x)
-    delta = y - xs[-1]
-
-    for W, x, y in zip(Ws[::-1], xs[-2::-1], xs[-1:1:-1]):
+    delta = y - (xs[-1]).transpose()
+    for W, x, y in zip(Ws[::-1], xs[-2::-1], xs[-1:0:-1]):
         delta, W = backpropagate_layer(x, y, W, learning_rate, delta)
         new_Ws.append(W)
 
     return new_Ws[::-1]
 
 
+def calculate_error(x, y, Ws):
+    z = forward(x, Ws).transpose()
+    error = y - z
+    squared_error = [e @ e.transpose() for e in error]
+    return np.mean(squared_error)
+
+
 def main():
     np.random.seed(0)
 
-    learning_rate = 0.1
-    x = np.array([1, 2, 3]).transpose()
-    y = np.array([1, 0, 1]).transpose()
-    hidden_sizes = [4, 7]
+    learning_rate = 0.01
+    x = np.array([[1, 2, 3], [4, 5, 6]]).transpose()
+    y = np.array([[1, 0, 1], [1, 0, 0.3]])
+    hidden_sizes = [10, 7]
 
-    Ws = initialize_network(len(x), len(y), hidden_sizes)
+    Ws = initialize_network(len(x), y.shape[1], hidden_sizes)
+    errors = []
 
-    for w in Ws:
-        print(w.shape)
+    for _ in range(10000):
+        Ws = backpropagate(x, y, Ws, learning_rate)
+        errors.append(calculate_error(x, y, Ws))
 
-    z = forward(x, Ws)
-    Ws = backpropagate(x, y, Ws, learning_rate)
+    z = forward(x, Ws).transpose()
+    print('z:', z)
+    print('error:', y - z)
 
-    print(Ws)
+    plt.plot(errors)
+    plt.show()
 
 if __name__ == '__main__':
     main()

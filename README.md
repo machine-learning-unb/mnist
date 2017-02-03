@@ -7,6 +7,12 @@ We decided to implement an [Artificial Neural Network](https://en.wikipedia.org/
 
 ## History
 
+### 03-Feb-2017
+
+In our second meeting, we could finally make a neural network learn from *dummy* data. We implemented forward pass, backpropagation and error visualization. However the neural network isn't overfitting the dummy data (it was expected to do so since we feed it with the same values over and over again) and we don't know how to explain it.
+
+As the next steps, we should review the backpropagation algorithm, refactor the code to be more maintainable and readable, as well as test it with MNIST data.
+
 ### 20-Jan-2017
 
 In this first meeting, we could take a grasp on how a neural network processes data and how it can be trained to perform better in the long run. Concepts such as layers, input, output, perceptron, weights, feedforward, backpropagation and learning rate were discussed.
