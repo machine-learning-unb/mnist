@@ -1,5 +1,5 @@
 import numpy as np
-import matplotlib.pylab as plt
+# import matplotlib.pylab as plt
 
 
 def initialize_network(input_size, output_size, hidden_sizes):
@@ -14,7 +14,7 @@ def initialize_network(input_size, output_size, hidden_sizes):
 
 
 def initialize_layer(rows, cols):
-    return np.random.random([rows, cols])
+    return (np.random.random([rows, cols]) - 0.5)
 
 
 def add_bias(x):
@@ -67,8 +67,8 @@ def backpropagate(x, y, Ws, learning_rate):
     xs = forward_all(Ws, x)
     delta = y - (xs[-1]).transpose()
     for W, x, y in zip(Ws[::-1], xs[-2::-1], xs[-1:0:-1]):
-        delta, W = backpropagate_layer(x, y, W, learning_rate, delta)
-        new_Ws.append(W)
+        delta, new_W = backpropagate_layer(x, y, W, learning_rate, delta)
+        new_Ws.append(new_W)
 
     return new_Ws[::-1]
 
@@ -81,26 +81,28 @@ def calculate_error(x, y, Ws):
 
 
 def main():
-    np.random.seed(0)
+    # np.random.seed(0)
 
-    learning_rate = 0.01
+    learning_rate = 0.1
     x = np.array([[1, 2, 3], [4, 5, 6]]).transpose()
     y = np.array([[1, 0, 1], [1, 0, 0.3]])
-    hidden_sizes = [10, 7]
+    hidden_sizes = [4, 15, 5]
 
     Ws = initialize_network(len(x), y.shape[1], hidden_sizes)
     errors = []
 
-    for _ in range(10000):
+    for _ in range(20000):
         Ws = backpropagate(x, y, Ws, learning_rate)
         errors.append(calculate_error(x, y, Ws))
+        if _ % 100 == 0:
+            learning_rate = learning_rate * 0.99
 
     z = forward(x, Ws).transpose()
     print('z:', z)
     print('error:', y - z)
 
-    plt.plot(errors)
-    plt.show()
+    # plt.plot(errors)
+    # plt.show()
 
 if __name__ == '__main__':
     main()
